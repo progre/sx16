@@ -1,26 +1,39 @@
 "use strict";
+const fs = require("fs");
 const gulp = require("gulp");
 const del = require("del");
 const runSequence = require("run-sequence");
 
 require("./gulp/copy")();
 require("./gulp/jade")();
+require("./gulp/serve")();
 require("./gulp/stylus")();
 require("./gulp/test")();
 require("./gulp/ts")();
 
-gulp.task("default", ["build", "watch"]);
+gulp.task("default", callback => {
+    runSequence(["build", "serve:init"], "watch", callback);
+});
+
+gulp.task("vendor", () => {
+    return gulp.src("node_modules/phaser/build/phaser.min.js")
+        .pipe(gulp.dest("lib/public/js/vendor/"));
+});
 
 gulp.task("release-build-and-test", ["release-build"], callback => {
     runSequence("test", callback);
 });
 
 gulp.task("build", ["clean"], callback => {
-    runSequence("copy:copy", "jade:build", "stylus:build", "ts", callback);
+    fs.mkdir("lib", () => {
+        runSequence("vendor", "copy:copy", "jade:build", "stylus:build", "ts", callback);
+    });
 });
 
 gulp.task("release-build", ["clean"], callback => {
-    runSequence("copy:copy", "jade:release", "stylus:release", "ts:release", callback);
+    fs.mkdir("lib", () => {
+        runSequence("vendor", "copy:copy", "jade:release", "stylus:release", "ts:release", callback);
+    });
 });
 
 gulp.task("clean", () => {
@@ -32,6 +45,7 @@ gulp.task("ts", callback => {
 });
 
 gulp.task("watch", () => {
+    gulp.watch("lib/**/*", ["serve:reload"]);
     gulp.watch("src/**/*.js", ["copy"]);
     gulp.watch(["src/**/*.ts*", "!src/test/"], ["ts"]);
     gulp.watch("src/**/*.jade", ["jade:build"]);
