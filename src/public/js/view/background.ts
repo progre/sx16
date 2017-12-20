@@ -1,4 +1,39 @@
-export let hoge: any;
+export default class Background {
+    private _stars: Star[] = [];
+
+    constructor(private bitmapData: Phaser.BitmapData, width: number, height: number) {
+        this._stars;
+        for (var i = 0; i < 50; i++) {
+            const light = 200;
+            var point = new Phaser.Point(
+                width * Math.random(),
+                height * Math.random());
+            this._stars.push(new Star(
+                point,
+                2 * Math.random() + 1,
+                Phaser.Color.createColor(
+                    light * Math.random(),
+                    light * Math.random(),
+                    light * Math.random()),
+                height));
+        }
+    }
+
+    extend() {
+        this._stars.forEach(x => x.extend());
+    }
+
+    warp() {
+        this._stars.forEach(x => x.warp());
+    }
+
+    render() {
+        this._stars.forEach(x => {
+            x.update();
+            x.render(this.bitmapData);
+        });
+    }
+}
 
 class Star {
     private _length = 1;
@@ -6,7 +41,7 @@ class Star {
     constructor(
         private _point: Phaser.Point,
         private _speed: number,
-        private _color: Phaser.Color,
+        private _color: any,
         private _screenHeight: number) {
     }
 
@@ -31,57 +66,14 @@ class Star {
         this._speed *= 4;
     }
 
-    render(Renderer renderer) {
-        if (_length == 1) {
-            renderer.DrawPixel(_point, _color);
+    render(bitmapData: Phaser.BitmapData) {
+        if (this._length === 1) {
+            bitmapData.setPixel(this._point.x, this._point.y, this._color.r, this._color.g, this._color.b);
             return;
         }
-        renderer.DrawLine(_point, _point.Shift(0, _length), _color);
+        // graphics.beginFill(this._color.color, 1);
+        // graphics.moveTo(this._point.x, this._point.y);
+        // graphics.lineTo(this._point.x, this._point.y + this._length);
+        // graphics.endFill();
     }
 }
-
-class BackgroundView {
-    private _stars: Star[] = [];
-
-    constructor(game: boolean) {
-        this._stars;
-        for (var i = 0; i < 50; i++) {
-            const light = 200;
-            Point point;
-            if (game)
-                point = new Point((short)r.Next(Point.Width),
-                    (short)r.Next(Point.Height));
-            else
-                point = new Point((short)r.Next(800),
-                    (short)r.Next(500));
-            _stars.Add(new Star(
-                point,
-                r.Next(1, 3),
-                new Color(
-                    (byte)r.Next(light), (byte)r.Next(light), (byte)r.Next(light))));
-        }
-    }
-
-    public Renderer Renderer { private get; set; }
-
-        public void Extend()
-{
-    foreach(Star star in _stars)
-    star.Extend();
-}
-
-        public void Warp()
-{
-    foreach(Star star in _stars)
-    star.Warp();
-}
-
-        public void Render()
-{
-    foreach(Star star in _stars)
-    {
-        star.Update();
-        star.Render(Renderer);
-    }
-}
-    }
